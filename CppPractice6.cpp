@@ -1,6 +1,10 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <ctime>
+#include <sys/types.h>
+#include <fcntl.h> 
+#include <string>
+#pragma warning(disable : 4996)
 
 using namespace std;
 
@@ -27,55 +31,91 @@ struct Computer
 		displaySize = DISPLAY_SIZES[rand() % 5];
 		capacity = CAPACITIES[rand() % 3];
 		ram = RAMs[rand() % 3];
-		price = rand() % 401 + 300;
-		frequency = (float(rand() % 23 + 18) / 10);
+		price = rand() % 401 + 400;
+		frequency = float(int(rand()) % 23 + 18) / 10;
 	}
 
 	void getInf()
 	{
-		cout << name << "\nPrice: " << price << "$\nDisplay size: " << displaySize << "\"\nDisplay type: " << displayType 
+		cout << name << "\nPrice: " << price << "$\nDisplay size: " << displaySize << "\"\nDisplay type: " << displayType
 			<< "\nRAM: " << ram << " Mb\nHDD: " << capacity << " Gb\nProcessor frequency: " << frequency << " GHz\n";
 	}
 };
 
-void inputInf(ifstream& in, Computer computer)
+size_t getFileSize(FILE* fp)
 {
-	in.read((char*)&computer, sizeof(computer));
+	size_t save_pos, size_of_file;
+
+	save_pos = ftell(fp);
+	fseek(fp, 0L, SEEK_END);
+	size_of_file = ftell(fp);
+	fseek(fp, save_pos, SEEK_SET);
+	return size_of_file;
 }
 
-void outputInf(ofstream& out, Computer computer)
+void output(char path[])
 {
-	out.write((char*)&computer, sizeof(computer));
+	const int AMOUNT = 10;
+	Computer* computers = new Computer[AMOUNT];
+
+	for (size_t i = 0; i < AMOUNT; i++)
+	{
+		computers[i].generateInf();
+	}
+
+	FILE* f_out = fopen(path, "wb");
+
+	fwrite(computers, sizeof(Computer), AMOUNT, f_out);
+	fclose(f_out);
+	delete[] computers;
+	computers = nullptr;
+
+	system("cls");
+	cout << "Information has been written\n\n";
+}
+
+void input(char path[])
+{
+	system("cls");
+
+	FILE* f_in = fopen(path, "rb");
+	size_t fileSize = getFileSize(f_in);
+	Computer* computers = new Computer[fileSize / sizeof(Computer)], bestComputer;
+
+	fread(computers, sizeof(Computer), fileSize / sizeof(Computer), f_in);
+	for (size_t i = 0; i < fileSize / sizeof(Computer); i++)
+	{
+		(computers + i)->getInf();
+		cout << endl;
+		if ((computers + i)->frequency > bestComputer.frequency && (computers + i)->ram > RAMs[0])
+			bestComputer = *(computers + i);
+	}
+	cout << "Best computer:\n";
+	bestComputer.getInf();
+	cout << endl;
+
+	fclose(f_in);
 }
 
 void lowLevel()
 {
-	string path = "C:\\Users\\User\\Desktop\\Computers.bin";
+	char path[] = "C:\\Users\\User\\Desktop\\Computers.bin";
+	int choice = 0;
 
-	Computer computer1, computer2;	
-
-	ofstream out(path,ios ::binary | ios::out );
-	if (out.is_open())
+	while (true)
 	{
-		computer1.generateInf();
-		computer1.getInf();
+		cout << "Choose operation:\n1 - to read information \t2 - to write information\t else - to exit\n";
+		cin >> choice;
 
-		out.write((char*) &computer1, sizeof(computer1));
-
-		out.close();
+		if (choice == 1)
+			input(path);
+		else if (choice == 2)
+			output(path);
+		else break;
 	}
-
-	/*ifstream in(path, ios::binary | ios::in);
-	if (in.is_open())
-	{
-		in.read((char*)&computer2, sizeof(Computer));
-		computer2.getInf();;
-
-		in.close();
-	}*/
 }
 
-void mediumLevel()
+/*void mediumLevel()
 {
 	string path = "C:\\Users\\User\\Desktop\\Symbols.bin"; //line = "";
 	u16string line;
@@ -86,64 +126,18 @@ void mediumLevel()
 	{
 		in.read(reinterpret_cast<char*>(&line), sizeof(line));
 		in.close();
-	}	
+	}
 
 	/*ofstream out(path, ios::out | ios::binary);
 	if (out.is_open())
 	{
 		out.write(reinterpret_cast<char*>(&line), sizeof(line));
 		out.close();
-	}*/
-}
+	}
+}*/
 
 int main()
 {
 	srand(time(0));
-	setlocale(LC_ALL, "Russian");
-	mediumLevel();
+	lowLevel();
 }
-
-//#include <iostream>
-//#include <fstream>      // std::fstream
-//
-//using namespace std;
-//
-//typedef struct
-//{
-//	int year;
-//	string fio;
-//} Anketa;
-//
-//int main()
-//{
-//	Anketa anketa;
-//	anketa.year = 1643;
-//	anketa.fio = "Isaac John Newton";
-//
-//	// *** Writing ***
-//	fstream fs;
-//	fs.open("anketa.dat", std::fstream::out | std::fstream::binary);
-//
-//	fs.write((char*)&anketa.year, sizeof(int));
-//	size_t len = anketa.fio.length();
-//	fs.write((char*)&len, sizeof(size_t));
-//	fs.write(anketa.fio.data(), len);
-//
-//	fs.close();
-//
-//	// *** Reading *** 
-//	fs.open("anketa.dat", std::fstream::in | std::fstream::binary);
-//
-//	fs.read((char*)&anketa.year, sizeof(int));
-//	fs.read((char*)&len, sizeof(size_t));
-//	char buf[len + 1];
-//	fs.read(buf, len);
-//	buf[len] = 0;
-//	anketa.fio = buf;
-//
-//	fs.close();
-//
-//	cout << anketa.year << " " << anketa.fio << endl;
-//
-//	return 0;
-//}
