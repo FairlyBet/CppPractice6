@@ -4,13 +4,14 @@
 #include <sys/types.h>
 #include <fcntl.h> 
 #include <string>
+#include <Windows.h>
 #pragma warning(disable : 4996)
 
 using namespace std;
 
 const string NAMES[5] = { "Cray", "Dell", "Hewlett-Packard", "IBM", "Sequent" };
 const string DISPLAY_TYPES[3] = { "IPS", "TN", "OLED" };
-const float DISPLAY_SIZES[5] = { 15.6, 19.5, 21.5, 23.8, 24.5 };
+const float DISPLAY_SIZES[5] = { 15.6f, 19.5f, 21.5f, 23.8f, 24.5f };
 const int CAPACITIES[3] = { 512, 1024, 2048 };
 const int RAMs[3] = { 2048, 4096, 8192 };
 
@@ -115,24 +116,100 @@ void lowLevel()
 	}
 }
 
-void mediumLevel()
+void writeLine(string path, string processedLine = "")
 {
-	char path[] = "C:\\Users\\User\\Desktop\\Symbols.bin";
-	const unsigned short AMOUNT_OF_SYMBOLS = 60;
-	wchar_t line[AMOUNT_OF_SYMBOLS];
-	cout << "Введите строку: ";
-	wcin >> line;
+	/*FILE* f_out = fopen(path, "wb");
+	string line = processedLine, * ptr = &line;
 
-	FILE* f_out = fopen(path, "wb"), * f_in = fopen(path, "rb");
-	fwrite(line, sizeof(wchar_t[AMOUNT_OF_SYMBOLS]), 1, f_out);
-	fclose(f_out);
+	if (line == "")
+	{
+		cout << "Введите строку: ";
+		cin >> line;
+	}
 
-	fread(line, sizeof(wchar_t[AMOUNT_OF_SYMBOLS]), 1, f_in);
+	fwrite(ptr, sizeof(string), 1, f_out);
+	fclose(f_out);*/
+
+	ofstream out(path, ios::out | ios::binary);
+	size_t length = 0;
+
+	if (processedLine == "")
+	{
+		cout << "Введите строку: ";
+		cin >> processedLine;
+		cout << endl;
+	}
+	length = processedLine.length() + 1;
+	out.write((char*)&length, sizeof(length));
+	out.write((char*)processedLine.c_str(), length);
+
+	out.close();
+}
+
+string readLine(string path)
+{
+	/*FILE* f_in = fopen(path, "rb");
+	string line = "", * ptr = &line;
+	
+	fread(ptr, sizeof(string), 1, f_in);
 	fclose(f_in);
 
-	cout << endl << "Полученная строка: ";
-	wcout << line;
+	cout << endl << "Полученная строка: " << line << endl << endl;
+	for (size_t i = 0; i < line.length(); i++)
+	{
+		if (line[i] == 'ф' || line[i] == 'Ф')
+			line[i] = 'д';
+	}
+	cout << "Обработанная строка: " << line << endl;*/
+
+	ifstream in(path, ios::in | ios::binary);
+	string line = "";
+	size_t length = 0;
+	
+	in.read((char*)&length, sizeof(length));
+	char* buf = new char[length];
+	in.read((char*)buf, length);
+	in.close();
+
+	line = buf;
+	delete[] buf;
+	buf = nullptr;
+
+	cout << "Полученная строка: " << line << endl << endl;
+	for (size_t i = 0; i < line.length(); i++)
+	{
+		if (line[i] == 'ф' || line[i] == 'Ф')
+			line[i] = 'д';
+	}
+	cout << "Обработанная строка: " << line << endl;
+
+	return line;
 }
+
+void mediumLevel()
+{
+	string path = "C:\\Users\\User\\Desktop\\Symbols.bin";
+
+	writeLine(path); // Запись последовательности символов в файл
+	
+	writeLine(path, readLine(path)); // Считывание символов, обработка и снова запись в файл
+}
+
+unsigned short currentDay = 14;
+unsigned short currentMonth = 5;
+unsigned short currentYear = 2020;
+
+struct Date
+{
+	unsigned short day = 0;
+	unsigned short month = 0;
+	unsigned short year = 0;
+};
+
+struct Customer
+{
+	string fullname;
+};
 
 void highLevel()
 {
@@ -141,7 +218,9 @@ void highLevel()
 
 int main()
 {
-	setlocale(LC_ALL, "Russian");
+	setlocale(LC_ALL, "RUS");
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
 	srand(time(0));
 	//lowLevel();
 	mediumLevel();
