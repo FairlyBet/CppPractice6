@@ -11,7 +11,7 @@ using namespace std;
 
 const string NAMES[5] = { "Cray", "Dell", "Hewlett-Packard", "IBM", "Sequent" };
 const string DISPLAY_TYPES[3] = { "IPS", "TN", "OLED" };
-const float DISPLAY_SIZES[5] = { 15.6f, 19.5f, 21.5f, 23.8f, 24.5f };
+const float DISPLAY_SIZES[5] = { 15.6F, 19.5F, 21.5F, 23.8F, 24.5F };
 const int CAPACITIES[3] = { 512, 1024, 2048 };
 const int RAMs[3] = { 2048, 4096, 8192 };
 
@@ -43,19 +43,19 @@ struct Computer
 	}
 };
 
-size_t getFileSize(FILE* fp)
+size_t getFileSize(FILE* file)
 {
-	size_t save_pos, size_of_file;
+	size_t sizeOfFile;
 
-	save_pos = ftell(fp);
-	fseek(fp, 0L, SEEK_END);
-	size_of_file = ftell(fp);
-	fseek(fp, save_pos, SEEK_SET);
-	return size_of_file;
+	fseek(file, 0L, SEEK_END);
+	sizeOfFile = ftell(file);
+	fseek(file, 0L, SEEK_SET);
+	return sizeOfFile;
 }
 
 void output(char path[])
 {
+	// Записываем информацию о десяти компьютерах в файл
 	const int AMOUNT = 10;
 	Computer* computers = new Computer[AMOUNT];
 
@@ -77,6 +77,7 @@ void output(char path[])
 
 void input(char path[])
 {
+	// Читаем информацию из файла и выводим на консоль
 	system("cls");
 
 	FILE* f_in = fopen(path, "rb");
