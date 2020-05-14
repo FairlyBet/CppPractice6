@@ -115,29 +115,34 @@ void lowLevel()
 	}
 }
 
-/*void mediumLevel()
+void mediumLevel()
 {
-	string path = "C:\\Users\\User\\Desktop\\Symbols.bin"; //line = "";
-	u16string line;
-	//cin >> line;
+	char path[] = "C:\\Users\\User\\Desktop\\Symbols.bin";
+	const unsigned short AMOUNT_OF_SYMBOLS = 60;
+	wchar_t line[AMOUNT_OF_SYMBOLS];
+	cout << "Введите строку: ";
+	wcin >> line;
 
-	ifstream in(path, ios::in | ios::binary);
-	if (in.is_open())
-	{
-		in.read(reinterpret_cast<char*>(&line), sizeof(line));
-		in.close();
-	}
+	FILE* f_out = fopen(path, "wb"), * f_in = fopen(path, "rb");
+	fwrite(line, sizeof(wchar_t[AMOUNT_OF_SYMBOLS]), 1, f_out);
+	fclose(f_out);
 
-	/*ofstream out(path, ios::out | ios::binary);
-	if (out.is_open())
-	{
-		out.write(reinterpret_cast<char*>(&line), sizeof(line));
-		out.close();
-	}
-}*/
+	fread(line, sizeof(wchar_t[AMOUNT_OF_SYMBOLS]), 1, f_in);
+	fclose(f_in);
+
+	cout << endl << "Полученная строка: ";
+	wcout << line;
+}
+
+void highLevel()
+{
+
+}
 
 int main()
 {
+	setlocale(LC_ALL, "Russian");
 	srand(time(0));
-	lowLevel();
+	//lowLevel();
+	mediumLevel();
 }
