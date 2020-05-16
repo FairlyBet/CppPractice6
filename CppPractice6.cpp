@@ -389,7 +389,7 @@ int main()
 
 	srand(time(0));
 
-	//lowLevel();
+	lowLevel();
 	//mediumLevel();
 	//highLevel();
 }
