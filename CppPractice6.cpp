@@ -50,6 +50,7 @@ size_t getFileSize(FILE* file)
 	fseek(file, 0L, SEEK_END);
 	sizeOfFile = ftell(file);
 	fseek(file, 0L, SEEK_SET);
+
 	return sizeOfFile;
 }
 
@@ -151,7 +152,7 @@ string readLine(string path)
 {
 	/*FILE* f_in = fopen(path, "rb");
 	string line = "", * ptr = &line;
-	
+
 	fread(ptr, sizeof(string), 1, f_in);
 	fclose(f_in);
 
@@ -166,7 +167,7 @@ string readLine(string path)
 	ifstream in(path, ios::in | ios::binary);
 	string line = "";
 	size_t length = 0;
-	
+
 	in.read((char*)&length, sizeof(length));
 	char* buf = new char[length];
 	in.read((char*)buf, length);
@@ -192,29 +193,192 @@ void mediumLevel()
 	string path = "C:\\Users\\User\\Desktop\\Symbols.bin";
 
 	writeLine(path); // Запись последовательности символов в файл
-	
+
 	writeLine(path, readLine(path)); // Считывание символов, обработка и снова запись в файл
 }
 
-unsigned short currentDay = 14;
-unsigned short currentMonth = 5;
-unsigned short currentYear = 2020;
+const unsigned short SIZE_OF_NAME_ARR = 10;
+string names[SIZE_OF_NAME_ARR] = { "William", "Michael", "James", "Daniel", "Samuel","Joshua", "Lucas", "Benjamin", "Sebastian", "Chistopher" };
+string lastnames[SIZE_OF_NAME_ARR] = { "Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller", "Wilson", "Taylor", "Jackson" };
 
 struct Date
 {
 	unsigned short day = 0;
 	unsigned short month = 0;
-	unsigned short year = 0;
+	unsigned short year = 2020;
+
+	bool isCorrect()
+	{
+		bool result = false;
+
+		switch (month)
+		{
+		case 1:
+		case 3:
+		case 5:
+		case 7:
+		case 8:
+		case 10:
+		case 12:
+		{
+			if ((day <= 31) && (day > 0))
+				result = true;
+			break;
+		}
+
+		case 4:
+		case 6:
+		case 9:
+		case 11:
+		{
+			if ((day <= 30) && (day > 0))
+				result = true;
+			break;
+		}
+
+		case 2:
+		{
+			if (year % 4 != 0)
+			{
+				if ((day <= 28) && (day > 0))
+					result = true;
+			}
+			else
+				if (year % 400 == 0)
+				{
+					if ((day <= 29) && (day > 0))
+						result = true;
+				}
+				else
+					if ((year % 100 == 0) && (year % 400 != 0))
+					{
+						if ((day == 28) && (day > 0))
+							result = true;
+					}
+					else
+						if ((year % 4 == 0) && (year % 100 != 0))
+							if ((day <= 29) && (day > 0))
+								result = true;
+			break;
+		}
+		default:
+			result = false;
+		}
+
+		return result;
+	}
+
+	void randDate()
+	{
+		do
+		{
+			day = rand() % 31 + 1;
+			month = rand() % 4 + 1;
+		} while (!isCorrect());
+	}
 };
 
 struct Customer
 {
-	string fullname;
+	string name = "";
+	Date dateOfPurchase;
+	unsigned int firstHalfYear = 0;
+	unsigned int secondHalfYear = 0;
+	float discountPercentage = 0;
+
+	void randInf()
+	{
+		name += lastnames[rand() % SIZE_OF_NAME_ARR] + " " + names[rand() % SIZE_OF_NAME_ARR][0] + ". " + names[rand() % SIZE_OF_NAME_ARR][0] + ".";
+		dateOfPurchase.randDate();
+		firstHalfYear = rand() % 15001 + 5000;
+		secondHalfYear = rand() % 15001 + 5000;
+		discountPercentage = float((rand() % 71)) / 10.0F;
+	}
+
+	void getInf()
+	{
+		cout << name << "\nDate: " << dateOfPurchase.day << "." << dateOfPurchase.month << "." << 
+			dateOfPurchase.year << "\nFirst half year cost: " << firstHalfYear << " UAH\nFirst half year cost: " << secondHalfYear << 
+			" UAH\nDiscount percentage: " << discountPercentage << "%\n\n";
+	}
 };
+
+struct Array
+{
+	Customer* customers = nullptr;
+	unsigned short amount = 0;
+	unsigned short needCost= 10000;
+	float changableValue = 5;
+
+	void initArr()
+	{
+		customers = new Customer[amount];
+	}
+
+	void getInf()
+	{
+		for (size_t i = 0; i < amount; i++)
+		{
+			(customers + i)->getInf();
+		}
+		cout << endl;
+	}
+
+	void editInf()
+	{
+		for (size_t i = 0; i < amount; i++)
+		{
+			if ((customers + i)->firstHalfYear > needCost && (customers + i)->secondHalfYear > needCost)
+				(customers + i)->discountPercentage += changableValue;
+		}
+	}
+};
+
+void writeInf(char path[], Customer* customers = nullptr, unsigned short amount = 0)
+{
+	FILE* f_out = fopen(path, "wb");
+	
+	if (amount == 0)
+	{
+		amount = rand() % 10 + 1;
+		customers = new Customer[amount];
+		for (size_t i = 0; i < amount; i++)
+		{
+			(customers + i)->randInf();
+		}
+	}
+	fwrite(customers, sizeof(Customer), amount, f_out);
+	fclose(f_out);
+
+	/*delete[] customers;
+	customers = nullptr;*/
+}
+
+Array readInf(char path[])
+{
+	FILE* f_in = fopen(path, "rb");
+	Array arr;
+	size_t fileLenth = getFileSize(f_in);
+	arr.amount = unsigned short(fileLenth / sizeof(Customer));
+	arr.initArr();
+
+	fread(arr.customers, sizeof(Customer), arr.amount, f_in);
+	fclose(f_in);
+
+	return arr;
+}
 
 void highLevel()
 {
+	char path[] = "C:\\Users\\User\\Desktop\\Customers.bin";
 
+	writeInf(path);
+	Array arr = readInf(path);
+	arr.getInf();
+	arr.editInf();
+	arr.getInf();
+	
+	writeInf(path, arr.customers, arr.amount);
 }
 
 int main()
@@ -222,7 +386,10 @@ int main()
 	setlocale(LC_ALL, "RUS");
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
+
 	srand(time(0));
+
 	//lowLevel();
-	mediumLevel();
+	//mediumLevel();
+	//highLevel();
 }
