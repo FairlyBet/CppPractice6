@@ -371,14 +371,31 @@ Array readInf(char path[])
 void highLevel()
 {
 	char path[] = "C:\\Users\\User\\Desktop\\Customers.bin";
+	Array arr;
+	int choice = 0;
 
-	writeInf(path);
-	Array arr = readInf(path);
-	arr.getInf();
-	arr.editInf();
-	arr.getInf();
-	
-	writeInf(path, arr.customers, arr.amount);
+	while (true)
+	{
+		cout << "1 - write some information \t 2 - read, process information and write again\n";
+		cin >> choice;
+
+		switch (choice)
+		{
+		case 1:
+			writeInf(path);
+			break;
+		case 2:
+			arr = readInf(path); 
+			arr.getInf();
+			arr.editInf();
+			arr.getInf();
+			writeInf(path, arr.customers, arr.amount);
+			break;
+		default:
+			return;
+			break;
+		}
+	}
 }
 
 int main()
@@ -388,8 +405,26 @@ int main()
 	SetConsoleOutputCP(1251);
 
 	srand(time(0));
-
-	lowLevel();
-	//mediumLevel();
-	//highLevel();
+	
+	int choice = 0;
+	
+	while (true)
+	{
+		cout << "1 - 1st task \t2 - 2nd task\t3 - t3rd task\n";
+		cin >> choice;
+		switch (choice)
+		{
+		case 1:
+			lowLevel();
+			break;
+		case 2: 
+			mediumLevel();
+			break;
+		case 3:
+			highLevel();
+			break;
+		default:
+			break;
+		}
+	}
 }
